@@ -1,0 +1,24 @@
+local Players = game:GetService("Players")
+local workspace = game:GetService("Workspace")
+local camera = workspace.CurrentCamera
+
+local function lockOnNearestPlayer()
+    local nearestPlayer, nearestDistance = nil, math.huge
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= Players.LocalPlayer then
+            local character = player.Character or player.CharacterAdded:Wait()
+            local head = character:WaitForChild("Head")
+            local distance = (head.Position - camera.CFrame.Position).Magnitude
+            if distance < nearestDistance then
+                nearestPlayer, nearestDistance = player, distance
+            end
+        end
+    end
+
+    if nearestPlayer then
+        local targetCFrame = CFrame.new(nearestPlayer.Character.Head.Position)
+        camera.CFrame = CFrame.new(camera.CFrame.Position, targetCFrame.Position) * CFrame.new(0, 0, -camera.CFrame.LookVector.Magnitude)
+    end
+end
+
+game:GetService("RunService").RenderStepped:Connect(lockOnNearestPlayer)
